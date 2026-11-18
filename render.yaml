@@ -29,13 +29,13 @@ services:
         value: 2.7.0
       - key: TTS_API_KEY
         sync: false
-  - type: static
+  - type: web
     name: asanamul-voice-muse-admin
     env: static
     rootDir: admin
     buildCommand: npm install && npm run build
     staticPublishPath: dist
-  - type: static
+  - type: web
     name: asanamul-voice-muse-generator
     env: static
     rootDir: generator
