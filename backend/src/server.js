@@ -16,6 +16,17 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const AUDIO_DIR = path.join(__dirname, '..', 'audio');
 fs.mkdirSync(AUDIO_DIR, { recursive: true });
 
+// Apply the schema on boot: Render's Postgres starts empty and there is no
+// separate migration runner, so the server creates its own tables
+// (CREATE TABLE IF NOT EXISTS — safe to run on every start).
+try {
+  const schemaPath = path.join(__dirname, '..', 'db', 'schema.sql');
+  if (fs.existsSync(schemaPath)) {
+    await pool.query(fs.readFileSync(schemaPath, 'utf8'));
+    console.log('DB schema applied');
+  }
+} catch (e) { console.error('DB schema apply failed:', e.message); }
+
 app.use(helmet());
 app.use(cors({ origin: (process.env.CORS_ORIGIN || 'http://localhost:5173,http://localhost:5174').split(',') }));
 app.use(express.json({ limit: '1mb' }));
