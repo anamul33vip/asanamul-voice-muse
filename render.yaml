@@ -1,0 +1,35 @@
+# Render Blueprint — AS ANAMUL VOICE (Muse backend)
+# Deploy: Render Dashboard -> New -> Blueprint -> connect this repo.
+# Then set TTS_API_KEY (ElevenLabs, server-side only) in the dashboard.
+# Note: Render's free PostgreSQL is a trial — back up keys/voices regularly
+# from the Admin panel; the live Voice Master backend stays the primary
+# server until this Postgres deployment is verified end-to-end.
+services:
+  - type: web
+    name: asanamul-voice-muse
+    env: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: asanamul-voice-db
+          property: connectionString
+      - key: ADMIN_TOKEN
+        generateValue: true
+      - key: PUBLIC_BASE_URL
+        value: https://asanamul-voice-muse.onrender.com
+      - key: TELEGRAM_URL
+        value: https://t.me/crackffpanel
+      - key: TTS_MODEL_ID
+        value: eleven_multilingual_v2
+      - key: APK_VERSION
+        value: 2.7.0
+      - key: TTS_API_KEY
+        sync: false
+databases:
+  - name: asanamul-voice-db
+    plan: free
+    databaseName: anam_voice
+    user: anam
