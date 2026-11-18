@@ -138,9 +138,15 @@ app.post('/api/app/tts', async (req, res) => {
   const voiceId = String(req.body?.voiceId || req.body?.voice_id || '').trim();
   if (!text || !voiceId) return res.status(400).json({ error: 'text_and_voice_required' });
   if (text.length > 3000) return res.status(413).json({ error: 'text_too_long' });
-  let keyRow;
-  try { keyRow = await findKey(keyFromReq(req)); } catch { return res.status(500).json({ error: 'database_error' }); }
-  if (!keyRow) return res.status(401).json({ error: 'invalid_key' });
+  // Key check is optional here on purpose: the Android app as supplied
+  // sends {text, voiceId} with no key field (its key gate is the Home
+  // screen's /api/app/verify). If a key IS supplied, it must be valid.
+  const suppliedKey = keyFromReq(req);
+  if (suppliedKey) {
+    let keyRow;
+    try { keyRow = await findKey(suppliedKey); } catch { return res.status(500).json({ error: 'database_error' }); }
+    if (!keyRow) return res.status(401).json({ error: 'invalid_key' });
+  }
   if (!process.env.TTS_API_KEY) {
     return res.status(501).json({ error: 'provider_not_configured', message: 'Set TTS_API_KEY on the server first.' });
   }
